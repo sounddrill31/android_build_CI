@@ -10,11 +10,11 @@ jobs:
 
     steps:
     - name: Create workspace
-      run: mkdir lmo
+      run: mkdir plros
       continue-on-error: true
 
     - name: Enter Workspace
-      run: cd lmo
+      run: cd plros
       continue-on-error: true
     - name: Cleanup
       run: rm -rf oxygen/
@@ -27,10 +27,10 @@ jobs:
         export filename=$(basename "$filepath"); \
     - name: Parse Filename
       run: |
-        name="${filename%.zip}"; \
-        rom_name="${filename%%-*}"; \
+        export name="${filename%.zip}"; \
+        export rom_name="${filename%%-*}"; \
         export build_date=$(echo "$filename" | grep -oP '\b\d{8}\b'); \
-        device=${name##*-}; \
+        export device=${name##*-}; \
         export tagname="${rom_name}-${device}-${build_date}"
         echo $tagname
     - name: Create and upload Release
@@ -39,7 +39,7 @@ jobs:
     - name: Update OTAs
       run: |
         git clone https://github.com/sounddrill31/Releases; \
-        json_file="Releases/plros-oxygen.json"; \
+        export json_file="Releases/plros-oxygen.json"; \
         sed -i -E "s/\"datetime\":[[:space:]]+([0-9]+)/\"datetime\": $build_date/" "$json_file"; \
         sed -i -E "s/(\"filename\":[[:space:]]*)\".*\"/\1\"$filename\"/" "$json_file"; \
         # will do size later \
