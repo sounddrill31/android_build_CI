@@ -10,8 +10,12 @@ jobs:
 
     steps:
     - name: Create workspace
-      run: mkdir lmo && cd lmo
+      run: mkdir lmo
+    - name: Enter Workspace
+      run: cd lmo
       continue-on-error: true
     - name: Run Script
       run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/lmodroid-oxygen/build.sh | sh
       continue-on-error: true
+    - name: Go back to old workspace
+      run: cd ..
