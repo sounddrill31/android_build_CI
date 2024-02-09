@@ -14,8 +14,29 @@ jobs:
     - name: Enter Workspace
       run: cd lmo
       continue-on-error: true
+    - name: Cleanup
+      run: rm -rf oxygen/
     - name: Run Script
       run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/lmodroid-oxygen/build.sh | sh
       continue-on-error: true
+    - name: Find output file
+      run: |
+        find oxygen -type f -name 'LMODroid-*-oxygen.zip' -exec bash -c 'filename=$(basename {})' \;
+        export filename
+    - name: Parse Filename
+      run: |
+        name="${filename%.*}"; \
+        components=(${name//-/ }); \
+        rom_name="${components[0]}"; \
+        date="${components[1]}"; \
+        device="${components[-1]}"; \
+         export tagname="${rom_name}-${device}-${date}"
+
+    - name: Create and upload Release
+      run: |
+        gh release create ${tagname} oxygen/${filename} -R https://github.com/sounddrill31/releases
+      continue-on-error: true
+
     - name: Go back to old workspace
       run: cd ..
+      
