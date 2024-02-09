@@ -35,17 +35,16 @@ jobs:
         echo $tagname
     - name: Create and upload Release
       run: |
-        gh release create ${tagname} oxygen/${filename} oxygen/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
+        gh release create ${tagname} ${device}/${filename} ${device}/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
     - name: Update OTAs
       run: |
         git clone https://github.com/sounddrill31/Releases; \
         json_file="Releases/plros-oxygen.json"; \
         sed -i -E "s/\"datetime\":[[:space:]]+([0-9]+)/\"datetime\": $build_date/" "$json_file"; \
         sed -i -E "s/(\"filename\":[[:space:]]*)\".*\"/\1\"$filename\"/" "$json_file"; \
-        # will do id later \
         # will do size later \
-        sed -i -E "s/(.*)(.zip)/\1${filename}.zip/g" "$json_file"
-        sed -i -E "s|([^/]*)/[^/]*\"|\1/$filename\"|" "$json_file"
-
-        
+        sed -i -E "s/(.*)(.zip)/\1${filename}.zip/g" "$json_file"; \
+        sed -i -E "s|([^/]*)/[^/]*\"|\1/$filename\"|" "$json_file"; \
+        package_hash=$(sha256sum "${device}/${filename}" | awk '{ print $1 }'); \
+        sed -i -E "s/\"id\":[[:space:]]*\"[^\"]+\"/\"id\": \"$package_hash\"/" "$json_file"; \
         
