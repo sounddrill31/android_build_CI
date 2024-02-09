@@ -11,6 +11,8 @@ jobs:
     steps:
     - name: Create workspace
       run: mkdir lmo
+      continue-on-error: true
+
     - name: Enter Workspace
       run: cd lmo
       continue-on-error: true
