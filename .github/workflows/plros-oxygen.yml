@@ -1,0 +1,42 @@
+name: plros build for oxygen
+
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Build plros for oxygen using foss.crave.io
+
+    runs-on: self-hosted
+
+    steps:
+    - name: Create workspace
+      run: mkdir lmo
+      continue-on-error: true
+
+    - name: Enter Workspace
+      run: cd lmo
+      continue-on-error: true
+    - name: Cleanup
+      run: rm -rf oxygen/
+    - name: Run Script
+      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build.sh | sh
+      continue-on-error: true
+    - name: Find output file
+      run: |
+        find oxygen -type f -name 'lineage-*-oxygen.zip' -exec bash -c 'filename=$(basename {})' \;
+        export filename
+    - name: Parse Filename
+      run: |
+        name="${filename%.*}"; \
+        components=(${name//-/ }); \
+        len=${#components[@]}; \
+        rom_name="${components[0]}"; \
+        date="${components[1]}"; \
+        device="oxygen"; \
+         export tagname="${rom_name}-${device}-${date}"
+
+    - name: Create and upload Release
+      run: |
+        gh release create ${tagname} oxygen/${filename} oxygen/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
+      continue-on-error: true
+      
