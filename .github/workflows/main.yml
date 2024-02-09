@@ -1,0 +1,14 @@
+name: Solr Tests
+
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Build LMODROID for oxygen using foss.crave.io
+
+    runs-on: self-hosted
+
+    steps:
+    - name: Run Script
+      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/lmodroid-oxygen/build.sh | sh
+      continue-on-error: true
