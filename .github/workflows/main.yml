@@ -1,4 +1,4 @@
-name: Solr Tests
+name: lmodroid build for oxygen
 
 on:
   workflow_dispatch:
@@ -9,6 +9,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Create workspace
+      run: mkdir lmo && cd lmo
+      continue-on-error: true
     - name: Run Script
       run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/lmodroid-oxygen/build.sh | sh
       continue-on-error: true
