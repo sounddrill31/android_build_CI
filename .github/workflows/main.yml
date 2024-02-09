@@ -29,16 +29,14 @@ jobs:
       run: |
         name="${filename%.*}"; \
         components=(${name//-/ }); \
+        len=${#components[@]}; \
         rom_name="${components[0]}"; \
         date="${components[1]}"; \
-        device="${components[-1]}"; \
+        device="${components[$((len-1))]}"; \
          export tagname="${rom_name}-${device}-${date}"
 
     - name: Create and upload Release
       run: |
-        gh release create ${tagname} oxygen/${filename} -R https://github.com/sounddrill31/releases
+        gh release create ${tagname} oxygen/${filename} oxygen/recovery.img -R https://github.com/sounddrill31/releases
       continue-on-error: true
-
-    - name: Go back to old workspace
-      run: cd ..
       
