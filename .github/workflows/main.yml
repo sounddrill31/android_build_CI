@@ -32,11 +32,11 @@ jobs:
         len=${#components[@]}; \
         rom_name="${components[0]}"; \
         date="${components[1]}"; \
-        device="${components[$((len-1))]}"; \
+        device="oxygen"; \
          export tagname="${rom_name}-${device}-${date}"
 
     - name: Create and upload Release
       run: |
-        gh release create ${tagname} oxygen/${filename} oxygen/recovery.img -R https://github.com/sounddrill31/releases
+        gh release create ${tagname} oxygen/${filename} oxygen/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
       continue-on-error: true
       
