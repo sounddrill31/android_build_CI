@@ -19,7 +19,7 @@ jobs:
     - name: Cleanup
       run: rm -rf oxygen/
     - name: Run Script
-      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build.sh | sh
+      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build-clean.sh | sh
       continue-on-error: true
     - name: Find output file
       run: |
