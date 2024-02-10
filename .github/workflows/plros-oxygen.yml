@@ -16,6 +16,9 @@ jobs:
     - name: Enter Workspace
       run: cd plros
       continue-on-error: true
+    - name: Install gh command
+      run: curl -sS https://webi.sh/gh | sh
+        
     - name: Cleanup
       run: rm -rf oxygen/
     - name: Run Script
