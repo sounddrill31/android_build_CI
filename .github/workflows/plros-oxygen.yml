@@ -18,12 +18,10 @@ jobs:
       continue-on-error: true
     - name: Install gh command
       run: curl -sS https://webi.sh/gh | sh
-        
     - name: Cleanup
       run: rm -rf oxygen/
     - name: Run Script
       run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build.sh | sh
-      continue-on-error: true
     - name: Find output file
       run: |
         filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
@@ -39,16 +37,8 @@ jobs:
         export tagname="${rom_name}-${codename}-${build_date}"; \
         echo "Tagname is: $tagname"; \
         gh release create ${tagname} ${codename}/${filename} ${codename}/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
-    - name: Update OTAs
+    - name: Generate OTA info and print
       run: |
-        git clone https://github.com/sounddrill31/Releases; \
-        export json_file="Releases/plros-oxygen.json"; \
-        sed -i -E "s/\"datetime\":[[:space:]]+([0-9]+)/\"datetime\": $build_date/" "$json_file"; \
-        sed -i -E "s/(\"filename\":[[:space:]]*)\".*\"/\1\"$filename\"/" "$json_file"; \
-        # will do size later \
-        sed -i -E "s/(.*)(.zip)/\1${filename}.zip/g" "$json_file"; \
-        sed -i -E "s|([^/]*)/[^/]*\"|\1/$filename\"|" "$json_file"; \
-        package_hash=$(md5sum "${codename}/${filename}" | awk '{ print $1 }'); \
-        sed -i -E "s/\"id\":[[:space:]]*\"[^\"]+\"/\"id\": \"$package_hash\"/" "$json_file"; \
-        cat $json_file
-        
+        git clone https://github.com/sounddrill31/OTA_scripts -b Oxygen-PlrOS; \
+        cd OTA_scripts;\
+        ./generate.sh ../oxygen/$filename  --init        
