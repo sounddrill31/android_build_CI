@@ -34,7 +34,7 @@ jobs:
         export codename=$(echo ${FILENAME} | cut -f6 -d"-" | sed s/.zip//); \
         echo "$rom_name is being built for $codename device"; \
         export tagname="${rom_name}-${codename}-${build_date}"; \
-        echo "Tagname is: $tagname"
+        echo "Tagname is: $tagname"; \
         gh release create ${tagname} ${codename}/${filename} ${codename}/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
     - name: Update OTAs
       run: |
