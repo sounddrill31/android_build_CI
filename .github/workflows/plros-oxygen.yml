@@ -45,6 +45,6 @@ jobs:
         # will do size later \
         sed -i -E "s/(.*)(.zip)/\1${filename}.zip/g" "$json_file"; \
         sed -i -E "s|([^/]*)/[^/]*\"|\1/$filename\"|" "$json_file"; \
-        package_hash=$(sha256sum "${device}/${filename}" | awk '{ print $1 }'); \
+        package_hash=$(md5sum "${device}/${filename}" | awk '{ print $1 }'); \
         sed -i -E "s/\"id\":[[:space:]]*\"[^\"]+\"/\"id\": \"$package_hash\"/" "$json_file"
         
