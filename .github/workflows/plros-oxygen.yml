@@ -24,14 +24,14 @@ jobs:
     - name: Find output file
       run: |
         filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
-        export filename=$(basename "$filepath"); \
+        export filename=$(basename "$filepath")
     - name: Parse Filename
       run: |
         export name="${filename%.zip}"; \
         export rom_name="${filename%%-*}"; \
         export build_date=$(echo "$filename" | grep -oP '\b\d{8}\b'); \
         export device=${name##*-}; \
-        export tagname="${rom_name}-${device}-${build_date}"
+        export tagname="${rom_name}-${device}-${build_date}"; \
         echo $tagname
     - name: Create and upload Release
       run: |
@@ -46,5 +46,5 @@ jobs:
         sed -i -E "s/(.*)(.zip)/\1${filename}.zip/g" "$json_file"; \
         sed -i -E "s|([^/]*)/[^/]*\"|\1/$filename\"|" "$json_file"; \
         package_hash=$(sha256sum "${device}/${filename}" | awk '{ print $1 }'); \
-        sed -i -E "s/\"id\":[[:space:]]*\"[^\"]+\"/\"id\": \"$package_hash\"/" "$json_file"; \
+        sed -i -E "s/\"id\":[[:space:]]*\"[^\"]+\"/\"id\": \"$package_hash\"/" "$json_file"
         
