@@ -25,14 +25,15 @@ jobs:
     - name: Find output file
       run: |
         filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
-        export filename=$(basename "$filepath")
+        export filename=$(basename "$filepath"); \
+        echo $filename
     - name: Create and upload Release
       run: |
         export rom_name=$(echo ${FILENAME} | cut -f1-2 -d"-"); \
         echo "We are building $rom_name" ; \
         export build_date=$(date -d$(echo ${FILENAME} | cut -f3 -d"-") +%Y%m%d); \
         echo "$rom_name was built on $build_date" ;\
-        export codename=$(echo ${FILENAME} | cut -f6 -d"-" | sed s/.zip//); \
+        export codename="oxygen"; \
         echo "$rom_name is being built for $codename device"; \
         export tagname="${rom_name}-${codename}-${build_date}"; \
         echo "Tagname is: $tagname"; \
