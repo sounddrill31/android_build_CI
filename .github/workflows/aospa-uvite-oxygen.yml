@@ -20,6 +20,10 @@ jobs:
       run: curl -sS https://webi.sh/gh | sh
     - name: Cleanup
       run: rm -rf oxygen/
+    - name: Exports
+      run: |
+        export BUILD_HOSTNAME=crave; \
+        export BUILD_USERNAME=sounddrill31
     - name: Run Script
       run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/aospa-uvite-oxygen/build.sh | sh
     - name: Find output file
