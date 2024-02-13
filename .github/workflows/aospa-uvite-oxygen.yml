@@ -1,0 +1,48 @@
+name: aospa build for oxygen
+
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Build aospa for oxygen using foss.crave.io
+
+    runs-on: self-hosted
+
+    steps:
+    - name: Create workspace
+      run: mkdir pa
+      continue-on-error: true
+
+    - name: Enter Workspace
+      run: cd pa
+      continue-on-error: true
+    - name: Install gh command
+      run: curl -sS https://webi.sh/gh | sh
+    - name: Cleanup
+      run: rm -rf oxygen/
+    - name: Run Script
+      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/aospa-uvite-oxygen/build.sh | sh
+    - name: Find output file
+      run: |
+        filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
+        export filename=$(basename "$filepath"); \
+        echo $filename
+    - name: Create and upload Release
+      run: |
+        export rom_name=$(echo ${FILENAME} | cut -f1-2 -d"-"); \
+        echo "We are building $rom_name" ; \
+        export build_date=$(date -d$(echo ${FILENAME} | cut -f3 -d"-") +%Y%m%d); \
+        echo "$rom_name was built on $build_date" ;\
+        export codename="oxygen"; \
+        echo "$rom_name is being built for $codename device"; \
+        export tagname="${rom_name}-${codename}-${build_date}"; \
+        echo "Tagname is: $tagname"; \
+        gh release create ${tagname} ${codename}/${filename} ${codename}/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
+      continue-on-error: true
+
+    - name: Generate OTA info and print
+      run: |
+        git clone https://github.com/sounddrill31/OTA_scripts -b Oxygen-PlrOS; \
+        cd OTA_scripts;\
+        ./generate.sh ../oxygen/$filename  --init         
+      continue-on-error: true
