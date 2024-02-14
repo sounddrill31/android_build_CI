@@ -6,7 +6,7 @@ jobs:
   test:
     name: Build los for oxygen using foss.crave.io
 
-    runs-on: ubuntu:latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Create workspace
