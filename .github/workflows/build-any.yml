@@ -13,6 +13,12 @@ on:
           - 'crdroid-10'
           - 'arrow-13'
           - 'derp-13'
+      BUILD_DIFFERENT_ROM:
+        description: 'Enter Repo Init Command'
+        required: false
+      REMOVALS:
+        description: 'Folders to Remove Before Syncing'
+        default: '.repo/local_manifests'
       LOCAL_MANIFEST:
         description: 'Local Manifest URL'
         required: true
@@ -29,8 +35,8 @@ on:
         description: 'MAKEFILE_NAME'
         required: true
         default: 'lineage_oxygen'
-      BUILD_TARGET:
-        description: 'BUILD_TARGET'
+      BUILD_COMMAND:
+        description: 'BUILD_COMMAND'
         required: true
         default: 'mka bacon'
       BUILD_TYPE:
@@ -41,7 +47,10 @@ on:
         options: 
         - 'eng'
         - 'userdebug'
-        - 'user'  
+        - 'user' 
+      CLEAN_BUILD:
+        description: 'Build Clean?'
+        default: 'false'
 jobs:
   test:
     name: Build los for oxygen using foss.crave.io
@@ -49,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Cleanup
+      uses: rokibhasansagar/slimhub_actions@main
     - name: Create workspace
       run: mkdir ${{ github.event.inputs.DEVICE_NAME }}
       continue-on-error: true
@@ -69,10 +80,18 @@ jobs:
         export BUILD_USERNAME=sounddrill31
         git config --global user.name "sounddrill31"
         git config --global user.email "sounddrill31@gmail.com"
-        repo init --depth 1 -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs
+         if [ "${{ github.event.inputs.BASE_PROJECT }}" == "arrow-13" ]; then
+                  repo init -u https://github.com/ArrowOS/android_manifest.git -b arrow-13.1
+         if [ "${{ github.event.inputs.BASE_PROJECT }}" == "derp-13" ]; then  
+                  repo init -u https://github.com/DerpFest-AOSP/manifest.git -b 13
+         if [ "${{ github.event.inputs.BASE_PROJECT }}" == "crdroid-10" ]; then  
+                  repo init -u https://github.com/crdroidandroid/android.git -b 14.0 --git-lfs
+         if [ "${{ github.event.inputs.BASE_PROJECT }}" == "lineage-20" ]; then  
+                  repo init -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs
+         else
+                  echo "Invalid Choice!"
+          fi
       id: pwd
-    - name: Cleanup
-      run: rm -rf oxygen/
     - name: Set Up Crave
       run: |
         rm -rf crave.conf crave
@@ -85,7 +104,12 @@ jobs:
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
     - name: Crave Run
       run: |
-        ./crave run --no-patch -- "rm -rf .repo/local_manifests && \
+        if [ "${{ github.event.inputs.CLEAN_BUILD }}" == "true" ]; then 
+           export CLEAN="--clean"
+          else
+            export CLEAN=""
+          fi
+        ./crave run $CLEAN --no-patch -- "rm -rf ${{ github.event.inputs.REMOVALS }} && \
         # Clone local_manifests repository
         git clone ${{ github.event.inputs.LOCAL_MANIFEST }} --depth 1 -b ${{ github.event.inputs.LOCAL_MANIFEST_BRANCH }} .repo/local_manifests && \
         # Sync the repositories
@@ -96,9 +120,25 @@ jobs:
         lunch ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.event.inputs.BUILD_TYPE }} && \
         # Build the ROM
         make clean && \
-        mka bacon"
+        ${{ github.event.inputs.BUILD_COMMAND }}"
     - name: Pull Compiled files
       run: |
         rm -rf oxygen/
         crave pull out/target/product/*/*.zip
         crave pull out/target/product/*/*.img 
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: | 
+          ${{ github.event.inputs.DEVICE_NAME }}/recovery.img
+          ${{ github.event.inputs.DEVICE_NAME }}/boot.img
+          ${{ github.event.inputs.DEVICE_NAME }}/vendor_boot.img
+          ${{ github.event.inputs.DEVICE_NAME }}/vendor.img
+          ${{ github.event.inputs.DEVICE_NAME }}/system.img
+          ${{ github.event.inputs.DEVICE_NAME }}/*.zip
+        name: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Target: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.event.inputs.BUILD_TYPE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
