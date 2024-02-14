@@ -55,10 +55,24 @@ jobs:
         # Lunch configuration
         lunch lineage_oxygen-userdebug && \
         # Build the ROM
+        make clean && \
         mka bacon"
     - name: Pull Compiled files
       run: |
         rm -rf oxygen/
         crave pull out/target/product/*/*.zip
         crave pull out/target/product/*/*.img 
-        telegram-upload --to sdreleases oxygen/*.zip oxygen/recovery.img
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: | 
+          ${{ github.event.inputs.DEVICE_NAME }}/*.zip
+          ${{ github.event.inputs.DEVICE_NAME }}/*.img
+        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
+          Device: ${{ github.event.inputs.DEVICE_NAME }}
+          Target: ${{ github.event.inputs.BUILD_TARGET }}.img
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
