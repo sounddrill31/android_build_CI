@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 jobs:
   test:
-    name: Build plros for oxygen using foss.crave.io
+    name: Build los for oxygen using foss.crave.io
 
     runs-on: ubuntu:latest
 
