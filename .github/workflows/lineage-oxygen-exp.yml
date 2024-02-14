@@ -1,0 +1,68 @@
+name: lineage build for oxygen
+
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Build plros for oxygen using foss.crave.io
+
+    runs-on: ubuntu:latest
+
+    steps:
+    - name: Create workspace
+      run: mkdir los
+      continue-on-error: true
+    - name: Enter Workspace
+      run: cd los
+      continue-on-error: true
+    - name: Install gh command
+      run: curl -sS https://webi.sh/gh | sh
+    - name: Install repo
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
+    - name: Initialize repo
+      run: |
+        export BUILD_HOSTNAME=crave
+        export BUILD_USERNAME=sounddrill31
+        git config --global user.name "sounddrill31"
+        git config --global user.email "sounddrill31@gmail.com"
+        repo init --depth 1 -u https://github.com/LineageOS/android.git -b lineage-20.0 --git-lfs
+      id: pwd
+    - name: Cleanup
+      run: rm -rf oxygen/
+    - name: Set Up Crave
+      run: |
+        rm -rf crave.conf crave
+        curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+        sed -i "s/CRAVEUSERNAME/${CRAVE_USERNAME}/g" crave.conf
+        sed -i "s/CRAVETOKEN/${CRAVE_TOKEN}/g" crave.conf
+      env: 
+        CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
+        CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+    - name: Crave Run
+      run: |
+        ./crave run --clean --no-patch -- "rm -rf .repo/local_manifests && \
+
+        # Clone local_manifests repository
+        git clone https://github.com/sounddrill31/local_manifests --depth 1 -b lineage-oxygen .repo/local_manifests && \
+
+        # Sync the repositories
+        repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags && \ 
+
+        # Set up build environment
+        source build/envsetup.sh && \
+
+        # Lunch configuration
+        lunch lineage_oxygen-userdebug && \
+
+        # Build the ROM
+        mka bacon"
+    - name: Pull Compiled files
+      run: |
+        rm -rf oxygen/
+        crave pull out/target/product/*/*.zip
+        crave pull out/target/product/*/*.img 
+        telegram-upload --to sdreleases oxygen/*.zip oxygen/recovery.img
