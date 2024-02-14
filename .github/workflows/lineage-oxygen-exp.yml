@@ -45,7 +45,7 @@ jobs:
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
     - name: Crave Run
       run: |
-        ./crave run --clean --no-patch -- "rm -rf .repo/local_manifests && \
+        ./crave run --no-patch -- "rm -rf .repo/local_manifests && \
         # Clone local_manifests repository
         git clone https://github.com/sounddrill31/local_manifests --depth 1 -b lineage-oxygen .repo/local_manifests && \
         # Sync the repositories
