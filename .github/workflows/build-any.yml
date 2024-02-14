@@ -1,4 +1,4 @@
-name: lineage build for oxygen
+name: Build ROMs Using Crave
 
 on:
   workflow_dispatch:
@@ -53,7 +53,7 @@ on:
         default: 'false'
 jobs:
   test:
-    name: Build los for oxygen using foss.crave.io
+    name: Build using foss.crave.io
 
     runs-on: ubuntu-latest
 
