@@ -1,0 +1,102 @@
+name: Scheduled aospa build for oxygen
+
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    name: Build aospa for oxygen using foss.crave.io
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create workspace
+      run: mkdir pa
+      continue-on-error: true
+
+    - name: Enter Workspace
+      run: cd pa
+      continue-on-error: true
+    - name: Install gh command
+      run: curl -sS https://webi.sh/gh | sh
+    - name: Cleanup
+      run: rm -rf oxygen/
+    - name: Create workspace
+      run: mkdir pa
+      continue-on-error: true
+    - name: Enter Workspace
+      run: cd pa
+      continue-on-error: true
+    - name: Install gh command
+      run: curl -sS https://webi.sh/gh | sh
+    - name: Cleanup
+      run: rm -rf *
+    - name: Install repo
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
+    - name: Initialize repo
+      run: |
+        export BUILD_HOSTNAME=crave
+        export BUILD_USERNAME=sounddrill31
+        git config --global user.name "sounddrill31"
+        git config --global user.email "sounddrill31@gmail.com"
+        repo init -u https://github.com/crdroidandroid/android.git -b 14.0 --git-lfs
+      id: pwd
+    - name: Set Up Crave
+      run: |
+        rm -rf crave.conf crave
+        wget https://raw.githubusercontent.com/sounddrill31/android_build_CI/main/crave.conf
+        curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+        sed -i "s/CRAVEUSERNAME/${CRAVE_USERNAME}/g" crave.conf
+        sed -i "s/CRAVETOKEN/${CRAVE_TOKEN}/g" crave.conf
+      env: 
+        CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
+        CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+    - name: Crave Run
+      run: |
+        crave run  --no-patch -- "rm -rf .repo/local_manifests prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9 && \
+
+        # Initialize repo with specified manifest
+        repo init -u https://github.com/AOSPA/manifest -b uvite --depth 1 --git-lfs && \
+
+        # Clone local_manifests repository
+        git clone https://github.com/sounddrill31/local_manifests --depth 1 -b aospa-oxygen .repo/local_manifests && \
+
+        # Sync the repositories
+        repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags && \ 
+
+        # Set up build environment
+        source build/envsetup.sh && \
+
+
+        # Lunch configuration
+        lunch aospa_oxygen-userdebug && \
+
+        # Build the ROM
+        rm -rf out/target/product/oxygen/ ; \
+        ./rom-build.sh oxygen"  
+    - name: Execute if the job is cancelled
+      if: ${{ cancelled() }}
+      run: ./crave stop --all
+    - name: Pull Compiled files
+      run: |
+        ./crave pull out/target/product/*/*.zip
+        ./crave pull out/target/product/*/*.img 
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: | 
+          oxygen/recovery.img
+          oxygen/boot.img
+          oxygen/vendor_boot.img
+          oxygen/vendor.img
+          oxygen/system.img
+          oxygen/*.zip
+        name: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Target: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.event.inputs.BUILD_TYPE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
