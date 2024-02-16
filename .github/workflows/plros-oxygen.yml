@@ -31,19 +31,19 @@ jobs:
         filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
         export filename=$(basename "$filepath"); \
         echo $filename
-    - name: Create and upload Release
-      run: |
-        export rom_name=$(echo ${FILENAME} | cut -f1-2 -d"-"); \
-        echo "We are building $rom_name" ; \
-        export build_date=$(date -d$(echo ${FILENAME} | cut -f3 -d"-") +%Y%m%d); \
-        echo "$rom_name was built on $build_date" ;\
-        export codename="oxygen"; \
-        echo "$rom_name is being built for $codename device"; \
-        export tagname="${rom_name}-${codename}-${build_date}"; \
-        echo "Tagname is: $tagname"; \
-        gh release create ${tagname} ${codename}/${filename} ${codename}/recovery.img -R https://github.com/sounddrill31/releases --prerelease -t "${filename}" -n "testing"
-    - name: Generate OTA info and print
-      run: |
-        git clone https://github.com/sounddrill31/OTA_scripts -b Oxygen-PlrOS; \
-        cd OTA_scripts;\
-        ./generate.sh ../oxygen/$filename  --init        
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: | 
+          oxygen/recovery.img
+          oxygen/boot.img
+          oxygen/vendor_boot.img
+          oxygen/vendor.img
+          oxygen/system.img
+          oxygen/*.zip
+        name: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Target: ${{ github.event.inputs.MAKEFILE_NAME }}-${{ github.event.inputs.BUILD_TYPE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
