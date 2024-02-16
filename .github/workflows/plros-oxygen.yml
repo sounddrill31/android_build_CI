@@ -25,7 +25,7 @@ jobs:
         export BUILD_HOSTNAME=crave; \
         export BUILD_USERNAME=sounddrill31
     - name: Run Script
-      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build-exp.sh | sh
+      run: curl -sf https://raw.githubusercontent.com/sounddrill31/android_build_scripts/plrOS-oxygen/build.sh | sh
     - name: Find output file
       run: |
         filepath=$(find ./oxygen -type f -name '*-oxygen.zip'); \
