@@ -56,7 +56,7 @@ jobs:
         CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
     - name: Crave Run
       run: |
-        ./crave run  --no-patch -- "rm -rf .repo/local_manifests prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9 && \
+        ./crave run  --no-patch -- "rm -rf .repo/local_manifests hardware/qcom-caf hardware/lineage/interfaces prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9 && \
 
         # Initialize repo with specified manifest
         repo init -u https://github.com/AOSPA/manifest -b uvite --depth 1 --git-lfs && \
